@@ -41,14 +41,7 @@ contract SimpleBank {
     /* Functions
      */
 
-    // Fallback function - Called if other functions don't match call or
-    // sent ether without data
-    // Typically, called when invalid data is sent
-    // Added so ether sent to this contract is reverted if the contract fails
-    // otherwise, the sender's money is transferred to contract
-    function () external payable {
-        revert();
-    }
+    
 
     /// @notice Get balance
     /// @return The balance of the user
@@ -100,14 +93,23 @@ contract SimpleBank {
       // Subtract the amount from the sender's balance, and try to send that amount of ether
       // to the user attempting to withdraw. 
       // return the user's balance.
-
       // 1. Use a require expression to guard/ensure sender has enough funds
-	   assert(balances[msg.sender] >= withdrawAmount);
+	   //assert(balances[msg.sender] <= withdrawAmount);
+	   require(balances[msg.sender] >= withdrawAmount , "Insufficient balance!");
       // 2. Transfer Eth to the sender and decrement the withdrawal amount from
       //    sender's balance
-	  balances[msg.sender]-= withdrawAmount;
+	  balances[msg.sender] -= withdrawAmount;
       // 3. Emit the appropriate event for this message
 	  emit LogWithdrawal(msg.sender, withdrawAmount, balances[msg.sender]);
 	  return balances[msg.sender];
+    }
+	
+	// Fallback function - Called if other functions don't match call or
+    // sent ether without data
+    // Typically, called when invalid data is sent
+    // Added so ether sent to this contract is reverted if the contract fails
+    // otherwise, the sender's money is transferred to contract
+    function () external payable {
+        revert();
     }
 }
