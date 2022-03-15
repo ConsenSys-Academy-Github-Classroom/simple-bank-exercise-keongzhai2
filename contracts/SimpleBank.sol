@@ -59,26 +59,36 @@ contract SimpleBank {
 	  return balances[msg.sender];
     }
 
+	//Modifier to check for enrollment
+	modifier checkEnrollmentTrue {
+		require(enrolled[msg.sender] == true , "Account not enrolled!");
+		_;
+	}
+	
     /// @notice Enroll a customer with the bank
     /// @return The users enrolled status
     // Emit the appropriate event
     function enroll() public returns (bool){
       // 1. enroll of the sender of this transaction
+	  //Account must be not enrolled before to be enrolled
+	  require(enrolled[msg.sender] == false , "Account not enrolled!");
+	  enrolled[msg.sender] = true;
+	  emit LogEnrolled(msg.sender);
+	  return enrolled[msg.sender];
     }
 
     /// @notice Deposit ether into bank
     /// @return The balance of the user after the deposit is made
-    function deposit() public returns (uint) {
-      // 1. Add the appropriate keyword so that this function can receive ether
-    
-      // 2. Users should be enrolled before they can make deposits
-
+    function deposit() public payable checkEnrollmentTrue returns (uint) {
+      // 1. Add the appropriate keyword so that this function can receive ether: payable
+      // 2. Users should be enrolled before they can make deposits: create modifier 'checkEnrollment'
       // 3. Add the amount to the user's balance. Hint: the amount can be
       //    accessed from of the global variable `msg`
-
+		balances[msg.sender] += msg.value;
       // 4. Emit the appropriate event associated with this function
-
-      // 5. return the balance of sndr of this transaction
+		emit LogDepositMade(msg.sender, balances[msg.sender]);
+      // 5.	return the balance of sndr of this transaction
+	  return balances[msg.sender];
     }
 
     /// @notice Withdraw ether from bank
@@ -92,10 +102,12 @@ contract SimpleBank {
       // return the user's balance.
 
       // 1. Use a require expression to guard/ensure sender has enough funds
-
+	   assert(balances[msg.sender] >= withdrawAmount);
       // 2. Transfer Eth to the sender and decrement the withdrawal amount from
       //    sender's balance
-
+	  balances[msg.sender]-= withdrawAmount;
       // 3. Emit the appropriate event for this message
+	  emit LogWithdrawal(msg.sender, withdrawAmount, balances[msg.sender]);
+	  return balances[msg.sender];
     }
 }
